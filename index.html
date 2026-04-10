@@ -1,379 +1,394 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CreditFlow v6 — Excel Data Cleaning Tool</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CreditFlow v7 — Multi-Sheet Excel Data Cleaning Tool</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="layout">
+    <div class="layout branch-colors">
+        <!-- ═══════════════════════════ SIDEBAR ═══════════════════════════ -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-mark">
+                    <div class="logo-icon">📋</div>
+                    <div>
+                        <div class="logo-text">CreditFlow</div>
+                        <div class="logo-ver">v7.0 — Multi-Sheet</div>
+                    </div>
+                </div>
+                <div class="logo-sub">Excel Data Cleaning Tool</div>
+            </div>
+            <nav class="nav">
+                <div class="nav-section">
+                    <div class="nav-label">Workspace</div>
+                    <button class="nav-item" onclick="switchPage('upload')" id="nav-upload"><span class="ni">⬆</span> Upload</button>
+                    <button class="nav-item" onclick="switchPage('preview')" id="nav-preview"><span class="ni">👁</span> Data Preview</button>
+                    <button class="nav-item" onclick="switchPage('dashboard')" id="nav-dashboard"><span class="ni">📊</span> Dashboard</button>
+                    <button class="nav-item" onclick="switchPage('records')" id="nav-records"><span class="ni">📄</span> Records <span class="nav-badge" id="nb-records">0</span></button>
+                    <button class="nav-item" onclick="switchPage('errors')" id="nav-errors"><span class="ni">⚠️</span> Error Log <span class="nav-badge" id="nb-errors">0</span></button>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-label">Tools</div>
+                    <button class="nav-item" onclick="switchPage('analytics')" id="nav-analytics"><span class="ni">📈</span> Analytics</button>
+                    <button class="nav-item" onclick="switchPage('clean')" id="nav-clean"><span class="ni">🧹</span> Clean Log</button>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-label">Export</div>
+                    <button class="nav-item" onclick="exportExcel()"><span class="ni">📥</span> Download Cleaned</button>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="file-badge">
+                    <strong id="fileNameDisplay">No file loaded</strong>
+                    <span id="fileStats">Upload an Excel file to begin</span>
+                </div>
+            </div>
+        </aside>
 
-<!-- ═══════════════════════════ SIDEBAR ═══════════════════════════ -->
-<aside class="sidebar">
-  <div class="logo">
-    <div class="logo-mark">
-      <div class="logo-icon">📋</div>
-      <div>
-        <div class="logo-text">CreditFlow</div>
-        <div class="logo-ver">v6.0</div>
-      </div>
-    </div>
-    <div class="logo-sub">Excel Data Cleaning Tool</div>
-  </div>
-  <nav class="nav">
-    <div class="nav-section">
-      <div class="nav-label">Workspace</div>
-      <button class="nav-item" onclick="switchPage('upload')" id="nav-upload"><span class="ni">⬆</span> Upload</button>
-      <button class="nav-item" onclick="switchPage('preview')" id="nav-preview"><span class="ni">👁</span> Data Preview</button>
-      <button class="nav-item" onclick="switchPage('dashboard')" id="nav-dashboard"><span class="ni">📊</span> Dashboard</button>
-      <button class="nav-item" onclick="switchPage('records')" id="nav-records"><span class="ni">📄</span> Records <span class="nav-badge" id="nb-records">0</span></button>
-      <button class="nav-item" onclick="switchPage('errors')" id="nav-errors"><span class="ni">⚠️</span> Error Log <span class="nav-badge" id="nb-errors">0</span></button>
-    </div>
-    <div class="nav-section">
-      <div class="nav-label">Tools</div>
-      <button class="nav-item" onclick="switchPage('analytics')" id="nav-analytics"><span class="ni">📈</span> Analytics</button>
-      <button class="nav-item" onclick="switchPage('products')" id="nav-products"><span class="ni">🔬</span> Product Cleaner</button>
-      <button class="nav-item" onclick="switchPage('clean')" id="nav-clean"><span class="ni">🧹</span> Clean Log</button>
-    </div>
-    <div class="nav-section">
-      <div class="nav-label">Export</div>
-      <button class="nav-item" onclick="exportExcel()"><span class="ni">📥</span> Download Excel</button>
-      <button class="nav-item" onclick="exportCSV()"><span class="ni">📄</span> Download CSV</button>
-    </div>
-  </nav>
-  <div class="sidebar-footer">
-    <div class="file-badge">
-      <strong id="fileNameDisplay">No file loaded</strong>
-      <span id="fileStats">Upload an Excel file to begin</span>
-    </div>
-  </div>
-</aside>
+        <!-- ═══════════════════════════ MAIN ══════════════════════════════ -->
+        <main class="main">
+            <div class="topbar">
+                <div class="topbar-left">
+                    <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    </button>
+                    <span class="page-title" id="topbarTitle">Welcome</span>
+                    <span class="record-pill" id="recordPill"></span>
+                </div>
+                <div class="topbar-right">
+                    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('fileInput2').click()">⬆ New file</button>
+                    <input type="file" id="fileInput2" accept=".xlsx,.xls" style="display:none" onchange="handleFile(event)">
+                    <button class="btn btn-primary btn-sm" onclick="exportExcel()" id="exportBtn" style="display:none">📥 Export</button>
+                </div>
+            </div>
+            <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-<!-- ═══════════════════════════ MAIN ══════════════════════════════ -->
-<main class="main">
-  <div class="topbar">
-    <div class="topbar-left">
-      <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
-      <span class="page-title" id="topbarTitle">Welcome</span>
-      <span class="record-pill" id="recordPill"></span>
-    </div>
-    <div class="topbar-right">
-      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('fileInput2').click()">⬆ New file</button>
-      <input type="file" id="fileInput2" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleFile(event)">
-      <button class="btn btn-primary btn-sm" onclick="exportExcel()" id="exportBtn" style="display:none">📥 Export</button>
-    </div>
-  </div>
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+            <!-- ─── UPLOAD ─────────────────────────────────────────────── -->
+            <div id="page-upload" class="upload-page">
+                <div class="upload-card">
+                    <h2>Import Multi-Sheet Excel</h2>
+                    <p>Upload a Tally-exported Excel file with <strong>multiple sheets</strong> (e.g. Mumbai, Goa, Surat). The tool reads ALL sheets, merges them into one dataset with a <strong>Branch</strong> column, cleans &amp; validates the data, and lets you download the final file.</p>
+                    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                        <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFile(event)">
+                        <div class="drop-icon">📊</div>
+                        <div class="drop-title">Drop your file here</div>
+                        <div class="drop-sub">or <span>browse to upload</span></div>
+                    </div>
+                    <div class="format-badges">
+                        <span class="fmt-badge">.xlsx</span>
+                        <span class="fmt-badge">.xls</span>
+                        <span class="fmt-badge">Multi-Sheet</span>
+                    </div>
+                    <div class="progress-wrap" id="progressWrap">
+                        <div class="progress-label" id="progressLabel">Reading file…</div>
+                        <div class="progress-bar"><div class="progress-inner animated" id="progressInner"></div></div>
+                    </div>
+                    <!-- Sheet Selector Panel -->
+                    <div class="sheet-selector" id="sheetSelector">
+                        <div class="sheet-selector-title">
+                            📂 Sheets found <span class="ss-count" id="ssCount">0</span>
+                        </div>
+                        <div class="sheet-controls">
+                            <button class="sheet-ctrl-btn" onclick="sheetSelectAll()">Select All</button>
+                            <button class="sheet-ctrl-btn" onclick="sheetDeselectAll()">Deselect All</button>
+                            <button class="sheet-ctrl-btn" onclick="sheetInvert()">Invert</button>
+                        </div>
+                        <div class="sheet-list" id="sheetList"></div>
+                        <div class="sheet-merge-info" id="sheetMergeInfo">Select the sheets you want to merge, then go to Preview.</div>
+                        <button class="btn btn-primary" id="btnNextPreview" onclick="switchPage('preview')" style="margin-top:14px;padding:10px 24px;font-size:14px;font-weight:600;display:none">Next: Preview & Merge →</button>
+                    </div>
+                </div>
+            </div>
 
-  <!-- ─── UPLOAD ─────────────────────────────────────────────── -->
-  <div id="page-upload" class="upload-page">
-    <div class="upload-card">
-      <h2>Import Excel / CSV</h2>
-      <p>Upload your Tally-exported Excel file or any CSV. The cleaner will auto-detect headers, merge multi-row records, fix gross values, remove duplicates, and flag data issues.</p>
-      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="handleFile(event)">
-        <div class="drop-icon">📊</div>
-        <div class="drop-title">Drop your file here</div>
-        <div class="drop-sub">or <span>browse to upload</span></div>
-      </div>
-      <div class="format-badges">
-        <span class="fmt-badge">.xlsx</span>
-        <span class="fmt-badge">.xls</span>
-        <span class="fmt-badge">.csv</span>
-      </div>
-      <div class="progress-wrap" id="progressWrap">
-        <div class="progress-label" id="progressLabel">Reading file…</div>
-        <div class="progress-bar"><div class="progress-inner animated" id="progressInner"></div></div>
-      </div>
-    </div>
-  </div>
+            <!-- ─── DATA PREVIEW ──────────────────────────────────────── -->
+            <div id="page-preview" class="page">
+                <div class="preview-section">
+                    <h3>👁 Merged Data Preview</h3>
+                    <p id="previewSubtitle">Upload a multi-sheet Excel file to see the merged preview with Branch column.</p>
+                    <div id="columnMapperSection" style="display:none">
+                        <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Detected Sheets &amp; Columns</div>
+                        <div class="mapper-grid" id="columnMapper"></div>
+                        <div class="divider"></div>
+                    </div>
+                    <div class="tab-bar">
+                        <button class="tab-btn active" onclick="switchPreviewTab(this,'raw')">Raw Merged</button>
+                        <button class="tab-btn" onclick="switchPreviewTab(this,'cleaned')">Cleaned Data</button>
+                    </div>
+                    <div class="tab-pane active" id="preview-raw">
+                        <div class="preview-table-wrap">
+                            <table class="preview-table" id="previewRawTable">
+                                <thead><tr><th>Upload a file to see preview</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="preview-cleaned">
+                        <div class="preview-table-wrap">
+                            <table class="preview-table" id="previewCleanedTable">
+                                <thead><tr><th>Click "Process &amp; Merge" to see cleaned data</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap" id="previewActions">
+                        <button class="btn btn-primary" id="btnProcessMerge" onclick="processAndMerge()" disabled style="padding:10px 22px;font-size:14px;font-weight:600">🔄 Process &amp; Merge</button>
+                        <button class="btn btn-green" id="btnDownloadCleaned" onclick="exportExcel()" disabled style="padding:10px 22px;font-size:14px;font-weight:600">📥 Download Cleaned File</button>
+                    </div>
+                </div>
+            </div>
 
-  <!-- ─── DATA PREVIEW ───────────────────────────────────────── -->
-  <div id="page-preview" class="page">
-    <div class="preview-section">
-      <h3>👁 Raw Data Preview</h3>
-      <p>First 50 rows from the uploaded file (before cleaning). Auto-detected column headers are shown below.</p>
-      <div id="columnMapperSection" style="display:none">
-        <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Auto-Detected Columns</div>
-        <div class="mapper-grid" id="columnMapper"></div>
-        <div class="divider"></div>
-      </div>
-      <div class="tab-bar">
-        <button class="tab-btn active" onclick="switchPreviewTab('original')">Original Data</button>
-        <button class="tab-btn" onclick="switchPreviewTab('cleaned')">Cleaned Data</button>
-      </div>
-      <div class="tab-pane active" id="preview-original">
-        <div class="preview-table-wrap">
-          <table class="preview-table" id="previewOriginalTable">
-            <thead><tr><th>Upload a file to see preview</th></tr></thead>
-            <tbody></tbody>
-          </table>
+            <!-- ─── DASHBOARD ──────────────────────────────────────────── -->
+            <div id="page-dashboard" class="page">
+                <div class="controls-panel">
+                    <div class="controls-row">
+                        <span class="controls-title">🛠 Cleaning controls</span>
+                        <div class="toggle-group">
+                            <label class="toggle-item"><input type="checkbox" id="opt-dedup" checked><span>Remove duplicates</span></label>
+                            <label class="toggle-item"><input type="checkbox" id="opt-gross" checked><span>Fix / compute Gross</span></label>
+                            <label class="toggle-item"><input type="checkbox" id="opt-trim" checked><span>Trim spaces</span></label>
+                            <label class="toggle-item"><input type="checkbox" id="opt-validate" checked><span>Validate data</span></label>
+                        </div>
+                        <div class="controls-sep"></div>
+                        <button class="btn-run" id="rerunBtn" onclick="rerunCleaning()" disabled>▶ Re-run cleaning</button>
+                    </div>
+                </div>
+
+                <!-- Active filter banner -->
+                <div class="dash-filter-banner" id="dashFilterBanner">
+                    <span id="dashFilterText">🔍 Filtered view</span>
+                    <button class="dash-filter-clear" onclick="clearDashFilter()">✕ Clear filter</button>
+                </div>
+
+                <!-- KPI Cards — clickable -->
+                <div class="stats-row">
+                    <div class="stat-card clickable" onclick="dashStatClick('total')" id="kpi-total">
+                        <div class="stat-label">📄 Total Records</div>
+                        <div class="stat-value blue" id="s-count">—</div>
+                        <div class="stat-sub" id="s-count-sub">—</div>
+                        <div class="spark-wrap" id="spark-total"></div>
+                    </div>
+                    <div class="stat-card clickable" onclick="dashStatClick('clean')" id="kpi-clean">
+                        <div class="stat-label">✅ Clean Rows</div>
+                        <div class="stat-value green" id="s-clean">—</div>
+                        <div class="stat-sub" id="s-clean-sub">—</div>
+                        <div class="spark-wrap" id="spark-clean"></div>
+                    </div>
+                    <div class="stat-card clickable" onclick="dashStatClick('branches')" id="kpi-branches">
+                        <div class="stat-label">🏢 Branches</div>
+                        <div class="stat-value purple" id="s-branches">—</div>
+                        <div class="stat-sub" id="s-branches-sub">—</div>
+                    </div>
+                    <div class="stat-card clickable" onclick="dashStatClick('grossfixed')" id="kpi-grossfixed">
+                        <div class="stat-label">🔧 Gross Fixed</div>
+                        <div class="stat-value amber" id="s-grossfixed">—</div>
+                        <div class="stat-sub" id="s-grossfixed-sub">—</div>
+                    </div>
+                    <div class="stat-card clickable" onclick="dashStatClick('errors')" id="kpi-errors">
+                        <div class="stat-label">⚠️ Errors Found</div>
+                        <div class="stat-value red" id="s-errors">—</div>
+                        <div class="stat-sub" id="s-errors-sub">—</div>
+                    </div>
+                </div>
+
+                <!-- Drill-down panel (hidden by default, slides open on click) -->
+                <div class="drill-panel" id="drillPanel">
+                    <div class="drill-header">
+                        <div class="drill-title" id="drillTitle">Details</div>
+                        <button class="drill-close" onclick="closeDrill()">✕</button>
+                    </div>
+                    <div class="drill-stats" id="drillStats"></div>
+                    <div style="max-height:260px;overflow-y:auto">
+                        <table class="drill-table">
+                            <thead id="drillThead"></thead>
+                            <tbody id="drillTbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <!-- Top customers — clickable bars with tooltips -->
+                    <div class="chart-card">
+                        <h3>Top 8 customers by gross <span style="font-size:11px;color:var(--muted);font-weight:400">— click a bar to drill down</span></h3>
+                        <div class="bar-chart" id="topCustomersChart"></div>
+                    </div>
+                    <!-- Branch donut chart — clickable segments -->
+                    <div class="chart-card">
+                        <h3>Gross by branch <span style="font-size:11px;color:var(--muted);font-weight:400">— click to filter</span></h3>
+                        <div class="donut-wrap" id="branchDonut"></div>
+                    </div>
+                </div>
+
+                <!-- Monthly volume — clickable month cards -->
+                <div class="chart-card" style="margin-bottom:14px">
+                    <h3>Monthly volume <span style="font-size:11px;color:var(--muted);font-weight:400">— click a month for details</span></h3>
+                    <div class="month-grid" id="monthlyGrid"></div>
+                </div>
+
+                <!-- Branch detailed breakdown — clickable -->
+                <div class="chart-card" style="margin-bottom:0">
+                    <h3>Branch breakdown <span style="font-size:11px;color:var(--muted);font-weight:400">— click a branch to drill down</span></h3>
+                    <div class="type-list" id="branchBreakdown"></div>
+                </div>
+            </div>
+
+            <!-- ─── RECORDS ────────────────────────────────────────────── -->
+            <div id="page-records" class="page">
+                <div class="alert-banner show" id="multiItemAlert">
+                    <span>⚠️</span>
+                    <span>Rows highlighted in <strong style="color:var(--orange)">orange</strong> = duplicates · <strong style="color:var(--amber)">yellow</strong> = gross corrected · <strong style="color:var(--red)">red</strong> = data error. Click any row to inspect.</span>
+                </div>
+                <div class="toolbar">
+                    <div class="search-wrap">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="search-input" id="searchBox" placeholder="Search customer, voucher, narration, branch…" oninput="applyFilters()">
+                    </div>
+                    <select class="filter-sel" id="filterBranch" onchange="applyFilters()"><option value="">All branches</option></select>
+                    <select class="filter-sel" id="filterStatus" onchange="applyFilters()">
+                        <option value="">All rows</option>
+                        <option value="clean">Clean only</option>
+                        <option value="grossfixed">Gross fixed</option>
+                        <option value="error">Errors</option>
+                    </select>
+                    <select class="filter-sel" id="filterSort" onchange="applyFilters()">
+                        <option value="date-asc">Oldest first</option>
+                        <option value="date-desc">Newest first</option>
+                        <option value="gross-desc">Gross ↓</option>
+                        <option value="gross-asc">Gross ↑</option>
+                        <option value="customer-asc">Customer A–Z</option>
+                        <option value="branch-asc">Branch A–Z</option>
+                    </select>
+                    <div class="toolbar-divider"></div>
+                    <span class="filter-count" id="filterCount">— rows</span>
+                    <button class="btn btn-ghost btn-sm" onclick="clearFilters()">Clear</button>
+                    <button class="btn btn-green btn-sm" onclick="exportExcel()">📥 Download</button>
+                </div>
+                <div class="table-card">
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th onclick="sortBy('date')"><div class="th-inner">Date<div class="sort-arrows" id="sa-date"><div class="arr arr-up"></div><div class="arr arr-down"></div></div></div></th>
+                                    <th onclick="sortBy('customer')"><div class="th-inner">Customer<div class="sort-arrows" id="sa-customer"><div class="arr arr-up"></div><div class="arr arr-down"></div></div></div></th>
+                                    <th>Credit Note No.</th>
+                                    <th>Narration</th>
+                                    <th onclick="sortBy('qty')" class="th-right"><div class="th-inner" style="justify-content:flex-end">Qty<div class="sort-arrows" id="sa-qty"><div class="arr arr-up"></div><div class="arr arr-down"></div></div></div></th>
+                                    <th class="th-right">Unit Rate</th>
+                                    <th class="th-right">Net Rate</th>
+                                    <th onclick="sortBy('gross')" class="th-right"><div class="th-inner" style="justify-content:flex-end">Gross<div class="sort-arrows" id="sa-gross"><div class="arr arr-up"></div><div class="arr arr-down"></div></div></div></th>
+                                    <th onclick="sortBy('branch')"><div class="th-inner">Branch<div class="sort-arrows" id="sa-branch"><div class="arr arr-up"></div><div class="arr arr-down"></div></div></div></th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="table-footer">
+                        <span id="pageInfo">—</span>
+                        <span id="filteredTotal" style="font-weight:600;color:var(--green)"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ─── ERROR LOG ──────────────────────────────────────────── -->
+            <div id="page-errors" class="page">
+                <div class="error-panel" id="errorPanel">
+                    <div class="error-panel-header">
+                        <div class="error-panel-title">⚠️ Data Quality Issues</div>
+                        <span class="error-panel-count" id="errorTotalCount">0 issues</span>
+                    </div>
+                    <div class="error-list" id="errorList">
+                        <div class="no-errors">✅ No errors detected. Upload a file first.</div>
+                    </div>
+                </div>
+                <div class="table-card" id="errorTableCard" style="display:none">
+                    <div class="table-scroll">
+                        <table>
+                            <thead><tr><th>Severity</th><th>Voucher</th><th>Customer</th><th>Date</th><th>Branch</th><th>Issue</th></tr></thead>
+                            <tbody id="errorTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ─── ANALYTICS ──────────────────────────────────────────── -->
+            <div id="page-analytics" class="page">
+                <div class="stats-row">
+                    <div class="stat-card"><div class="stat-label">📊 Avg Gross / Record</div><div class="stat-value blue" id="a-avg">—</div></div>
+                    <div class="stat-card"><div class="stat-label">🏆 Highest Single CN</div><div class="stat-value green" id="a-max">—</div><div class="stat-sub" id="a-max-cust">—</div></div>
+                    <div class="stat-card"><div class="stat-label">📅 Date Range</div><div class="stat-value" style="font-size:14px" id="a-range">—</div></div>
+                    <div class="stat-card"><div class="stat-label">🏢 Branches</div><div class="stat-value purple" id="a-branches">—</div></div>
+                    <div class="stat-card"><div class="stat-label">💰 Total Gross</div><div class="stat-value green" id="a-total">—</div></div>
+                </div>
+                <div class="analytics-grid">
+                    <div class="chart-card" style="grid-column:span 2"><h3>Top 15 customers by gross total</h3><div class="bar-chart" id="bigCustomerChart"></div></div>
+                </div>
+                <div class="analytics-grid">
+                    <div class="chart-card"><h3>Monthly gross total</h3><div class="bar-chart" id="monthBarChart"></div></div>
+                    <div class="chart-card"><h3>Gross by branch</h3><div class="bar-chart" id="branchBarChart"></div></div>
+                </div>
+            </div>
+
+            <!-- ─── CLEAN LOG ──────────────────────────────────────────── -->
+            <div id="page-clean" class="page">
+                <div class="clean-section">
+                    <h3>🧹 Cleaning operations applied</h3>
+                    <p>These transformations run automatically on every file import.</p>
+                    <div class="check-list">
+                        <div class="check-item"><div class="check-dot green"></div>All sheets detected and read from the Excel file</div>
+                        <div class="check-item"><div class="check-dot green"></div><strong>Branch column added</strong> — each row tagged with its source sheet name</div>
+                        <div class="check-item"><div class="check-dot green"></div>All sheets merged into a single unified dataset</div>
+                        <div class="check-item"><div class="check-dot green"></div>Multi-row credit notes merged — each voucher becomes flat item-level rows</div>
+                        <div class="check-item"><div class="check-dot green"></div>Gross = Qty × Unit Rate computed if Gross is missing or zero</div>
+                        <div class="check-item"><div class="check-dot green"></div>Gross validated: rows where Gross ≠ Qty × Rate (±₹1 tolerance) are flagged &amp; corrected</div>
+                        <div class="check-item"><div class="check-dot green"></div><strong>Duplicate detection:</strong> Credit Note + Item + Qty + Rate + Branch composite key</div>
+                        <div class="check-item"><div class="check-dot green"></div>Cancelled vouchers excluded automatically</div>
+                        <div class="check-item"><div class="check-dot green"></div>Grand Total rows removed from output</div>
+                        <div class="check-item"><div class="check-dot green"></div>All spaces trimmed from all text fields</div>
+                        <div class="check-item"><div class="check-dot green"></div>Sorted by Date ascending</div>
+                        <div class="check-item"><div class="check-dot amber"></div>Missing Qty/Rate default to 0 and appear in Error Log</div>
+                    </div>
+                </div>
+                <div class="clean-section">
+                    <h3>📋 File summary</h3>
+                    <p>Details of the last imported file.</p>
+                    <div id="cleanSummaryTable"><div style="color:var(--muted);font-size:13px">No file loaded yet.</div></div>
+                </div>
+                <div class="clean-section">
+                    <h3>🚩 Quality flags</h3>
+                    <p>Potential data quality issues that require manual verification.</p>
+                    <div id="qualityFlags"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ─── DETAIL MODAL ──────────────────────────────────────────── -->
+    <div class="overlay" id="detailOverlay" onclick="if(event.target===this)closeModal()">
+        <div class="modal">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title" id="modalVoucher">—</div>
+                    <div class="modal-sub" id="modalDate">—</div>
+                </div>
+                <button class="modal-close-btn" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="modalFlagBox"></div>
+                <div class="detail-grid" id="detailGrid"></div>
+                <div id="narrationSection"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+            </div>
         </div>
-      </div>
-      <div class="tab-pane" id="preview-cleaned">
-        <div class="preview-table-wrap">
-          <table class="preview-table" id="previewCleanedTable">
-            <thead><tr><th>Process file to see cleaned data</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ─── DASHBOARD ──────────────────────────────────────────── -->
-  <div id="page-dashboard" class="page">
-    <!-- Smart cleaning controls -->
-    <div class="controls-panel">
-      <div class="controls-row">
-        <span class="controls-title">🛠 Cleaning controls</span>
-        <div class="toggle-group">
-          <label class="toggle-item"><input type="checkbox" id="opt-dedup" checked><span>Remove duplicates</span></label>
-          <label class="toggle-item"><input type="checkbox" id="opt-gross" checked><span>Fix / compute Gross</span></label>
-          <label class="toggle-item"><input type="checkbox" id="opt-product" checked><span>Extract product fields</span></label>
-          <label class="toggle-item"><input type="checkbox" id="opt-trim" checked><span>Trim spaces</span></label>
-          <label class="toggle-item"><input type="checkbox" id="opt-validate" checked><span>Validate data</span></label>
-          <label class="toggle-item"><input type="checkbox" id="opt-jancheck" checked><span>Flag Jan repeats</span></label>
-        </div>
-        <div class="controls-sep"></div>
-        <button class="btn-run" id="rerunBtn" onclick="rerunCleaning()" disabled>▶ Re-run cleaning</button>
-      </div>
     </div>
 
-    <div class="stats-row">
-      <div class="stat-card"><div class="stat-label">📄 Total Records</div><div class="stat-value blue" id="s-count">—</div><div class="stat-sub" id="s-count-sub">—</div></div>
-      <div class="stat-card"><div class="stat-label">✅ Clean Rows</div><div class="stat-value green" id="s-clean">—</div><div class="stat-sub" id="s-clean-sub">—</div></div>
-      <div class="stat-card"><div class="stat-label">🔁 Dupes Removed</div><div class="stat-value amber" id="s-dupes">—</div><div class="stat-sub" id="s-dupes-sub">—</div></div>
-      <div class="stat-card"><div class="stat-label">🔧 Gross Fixed</div><div class="stat-value purple" id="s-grossfixed">—</div><div class="stat-sub" id="s-grossfixed-sub">—</div></div>
-      <div class="stat-card"><div class="stat-label">⚠️ Errors Found</div><div class="stat-value red" id="s-errors">—</div><div class="stat-sub" id="s-errors-sub">—</div></div>
-    </div>
-    <div class="analytics-grid">
-      <div class="chart-card"><h3>Top 8 customers by gross</h3><div class="bar-chart" id="topCustomersChart"></div></div>
-      <div class="chart-card"><h3>By voucher series</h3><div class="type-list" id="typeBreakdown"></div></div>
-    </div>
-    <div class="chart-card" style="margin-bottom:0"><h3>Monthly volume</h3><div class="month-grid" id="monthlyGrid"></div></div>
-  </div>
+    <div class="toast" id="toast"><span id="toastMsg">Done!</span></div>
 
-  <!-- ─── RECORDS ────────────────────────────────────────────── -->
-  <div id="page-records" class="page">
-    <div class="alert-banner" id="multiItemAlert">
-      <span>⚠️</span>
-      <span>Rows highlighted in <strong style="color:var(--orange)">orange</strong> are potential duplicates · <strong style="color:var(--amber)">yellow</strong> = gross was corrected · <strong style="color:var(--red)">red</strong> = data error. Click any row to inspect.</span>
-    </div>
-    <div class="toolbar">
-      <div class="search-wrap">
-        <span class="search-icon">🔍</span>
-        <input type="text" class="search-input" id="searchBox" placeholder="Search customer, voucher, narration, item…" oninput="applyFilters()">
-      </div>
-      <select class="filter-sel" id="filterVType" onchange="applyFilters()"><option value="">All types</option></select>
-      <select class="filter-sel" id="filterYear" onchange="applyFilters()"><option value="">All years</option></select>
-      <select class="filter-sel" id="filterStatus" onchange="applyFilters()">
-        <option value="">All rows</option>
-        <option value="clean">Clean only</option>
-        <option value="dup">Duplicates</option>
-        <option value="grossfixed">Gross fixed</option>
-        <option value="error">Errors</option>
-      </select>
-      <select class="filter-sel" id="filterSort" onchange="applyFilters()">
-        <option value="date-asc">Oldest first</option>
-        <option value="date-desc">Newest first</option>
-        <option value="gross-desc">Gross ↓</option>
-        <option value="gross-asc">Gross ↑</option>
-        <option value="customer-asc">Customer A–Z</option>
-      </select>
-      <div class="toolbar-divider"></div>
-      <span class="filter-count" id="filterCount">— rows</span>
-      <button class="btn btn-ghost btn-sm" onclick="clearFilters()">Clear</button>
-      <button class="btn btn-green btn-sm" onclick="exportExcel()">📥 Excel</button>
-      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">📄 CSV</button>
-    </div>
-    <div class="table-card">
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th onclick="sortBy('date')"><div class="th-inner">Date<div class="sort-arrows" id="sa-date"><div class="arr arr-up"></div><div class="arr arr-down"></div></div></div></th>
-              <th onclick="sortBy('customer')"><div class="th-inner">Customer<div class="sort-arrows" id="sa-customer"><div class="arr arr-up"></div><div class="arr arr-down"></div></div></div></th>
-              <th>Series</th>
-              <th onclick="sortBy('voucher')"><div class="th-inner">Voucher No.<div class="sort-arrows" id="sa-voucher"><div class="arr arr-up"></div><div class="arr arr-down"></div></div></div></th>
-              <th>Narration</th>
-              <th>Item / Part</th>
-              <th onclick="sortBy('qty')" class="th-right"><div class="th-inner" style="justify-content:flex-end">Qty<div class="sort-arrows" id="sa-qty"><div class="arr arr-up"></div><div class="arr arr-down"></div></div></div></th>
-              <th class="th-right">Rate</th>
-              <th onclick="sortBy('value')" class="th-right"><div class="th-inner" style="justify-content:flex-end">Value<div class="sort-arrows" id="sa-value"><div class="arr arr-up"></div><div class="arr arr-down"></div></div></div></th>
-              <th onclick="sortBy('gross')" class="th-right"><div class="th-inner" style="justify-content:flex-end">Gross Total<div class="sort-arrows" id="sa-gross"><div class="arr arr-up"></div><div class="arr arr-down"></div></div></div></th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
-        </table>
-      </div>
-      <div class="table-footer">
-        <span id="pageInfo">—</span>
-        <span id="filteredTotal" style="font-weight:600;color:var(--green)"></span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ─── ERROR LOG ──────────────────────────────────────────── -->
-  <div id="page-errors" class="page">
-    <div class="error-panel" id="errorPanel">
-      <div class="error-panel-header">
-        <div class="error-panel-title">⚠️ Data Quality Issues</div>
-        <span class="error-panel-count" id="errorTotalCount">0 issues</span>
-      </div>
-      <div class="error-list" id="errorList">
-        <div class="no-errors">✅ No errors detected. Upload a file first.</div>
-      </div>
-    </div>
-    <div class="table-card" id="errorTableCard" style="display:none">
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Severity</th>
-              <th>Voucher</th>
-              <th>Customer</th>
-              <th>Date</th>
-              <th>Issue</th>
-              <th>Field</th>
-            </tr>
-          </thead>
-          <tbody id="errorTableBody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- ─── ANALYTICS ──────────────────────────────────────────── -->
-  <div id="page-analytics" class="page">
-    <div class="stats-row">
-      <div class="stat-card"><div class="stat-label">📊 Avg Gross / Record</div><div class="stat-value blue" id="a-avg">—</div></div>
-      <div class="stat-card"><div class="stat-label">🏆 Highest Single CN</div><div class="stat-value green" id="a-max">—</div><div class="stat-sub" id="a-max-cust">—</div></div>
-      <div class="stat-card"><div class="stat-label">📅 Date Range</div><div class="stat-value" style="font-size:14px" id="a-range">—</div></div>
-      <div class="stat-card"><div class="stat-label">📦 Unique Items</div><div class="stat-value" id="a-multi">—</div><div class="stat-sub">distinct part numbers</div></div>
-      <div class="stat-card"><div class="stat-label">💰 Total Gross</div><div class="stat-value green" id="a-total">—</div></div>
-    </div>
-    <div class="analytics-grid">
-      <div class="chart-card" style="grid-column:span 2"><h3>Top 15 customers by gross total</h3><div class="bar-chart" id="bigCustomerChart"></div></div>
-    </div>
-    <div class="analytics-grid">
-      <div class="chart-card"><h3>Monthly gross total</h3><div class="bar-chart" id="monthBarChart"></div></div>
-      <div class="chart-card"><h3>Top 12 items by gross</h3><div class="bar-chart" id="vtypeBreak"></div></div>
-    </div>
-  </div>
-
-  <!-- ─── PRODUCT CLEANER ────────────────────────────────────── -->
-  <div id="page-products" class="page">
-    <div class="product-section">
-      <h3>🔬 Product Name Cleaner</h3>
-      <p>Paste a raw product name to extract Clean Name, Part Number, Make (from last parentheses), and Tracker tag (from last square brackets).</p>
-      <div class="product-input-row">
-        <input type="text" class="product-input" id="productInput"
-          placeholder="e.g. SHELL TELLUS S2 MX 68 1*209L (SHELL) [WH-42]"
-          oninput="liveParseProduct()">
-        <button class="btn btn-primary" onclick="liveParseProduct()">Parse</button>
-      </div>
-      <div class="parsed-result" id="parsedResult">
-        <div class="parsed-field"><div class="parsed-label">Clean Name</div><div class="parsed-value" id="pr-name">—</div></div>
-        <div class="parsed-field"><div class="parsed-label">Part Number</div><div class="parsed-value highlight" id="pr-part">—</div></div>
-        <div class="parsed-field"><div class="parsed-label">Make (last parentheses)</div><div class="parsed-value" id="pr-make">—</div></div>
-        <div class="parsed-field"><div class="parsed-label">Tracker (last brackets)</div><div class="parsed-value" id="pr-tracker">—</div></div>
-      </div>
-    </div>
-
-    <div class="product-section">
-      <h3>📦 All Items from File</h3>
-      <p id="productFileNote">No data yet — upload a file first.</p>
-      <div class="product-table-wrap">
-        <table class="product-table">
-          <thead>
-            <tr>
-              <th>Original Name</th>
-              <th>Clean Name</th>
-              <th>Part Number</th>
-              <th>Make</th>
-              <th>Tracker</th>
-            </tr>
-          </thead>
-          <tbody id="productTableBody">
-            <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">No data yet — upload a file first.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- ─── CLEAN LOG ──────────────────────────────────────────── -->
-  <div id="page-clean" class="page">
-    <div class="clean-section">
-      <h3>🧹 Cleaning operations applied</h3>
-      <p>These transformations run automatically on every file import.</p>
-      <div class="check-list">
-        <div class="check-item"><div class="check-dot green"></div>Full file parsed end-to-end — no early cutoff on repeated voucher sections</div>
-        <div class="check-item"><div class="check-dot green"></div>Multi-row credit notes merged — each voucher becomes flat item-level rows</div>
-        <div class="check-item"><div class="check-dot green"></div>Rate read from detail sub-rows only (never from blank main row)</div>
-        <div class="check-item"><div class="check-dot green"></div>Gross = Qty × Rate computed if Gross is missing or zero</div>
-        <div class="check-item"><div class="check-dot green"></div>Gross validated: rows where Gross ≠ Qty × Rate (±₹1 tolerance) are flagged</div>
-        <div class="check-item"><div class="check-dot green"></div>Gross allocated across multi-item vouchers proportionally by value</div>
-        <div class="check-item"><div class="check-dot green"></div><strong>Duplicate detection:</strong> Credit Note + Item + Qty + Rate composite key</div>
-        <div class="check-item"><div class="check-dot green"></div><strong>January re-export duplicates removed:</strong> vouchers in Jan AND a later month → Jan rows deleted</div>
-        <div class="check-item"><div class="check-dot green"></div>Jan repeat detection counts unique voucher numbers (not rows) — multi-item CNs never falsely flagged</div>
-        <div class="check-item"><div class="check-dot green"></div>Cancelled vouchers excluded automatically</div>
-        <div class="check-item"><div class="check-dot green"></div>Grand Total rows removed from output</div>
-        <div class="check-item"><div class="check-dot green"></div>Customer name: longer of Particulars vs Buyer column used</div>
-        <div class="check-item"><div class="check-dot green"></div>_x000D_ carriage-return artifacts stripped from narration text</div>
-        <div class="check-item"><div class="check-dot green"></div>All spaces trimmed from all text fields</div>
-        <div class="check-item"><div class="check-dot green"></div>Product names parsed: Clean Name, Part Number, Make, Tracker extracted</div>
-        <div class="check-item"><div class="check-dot green"></div>Sorted by Date ascending</div>
-        <div class="check-item"><div class="check-dot amber"></div>Missing Qty/Rate default to 0 and appear in Error Log</div>
-        <div class="check-item"><div class="check-dot amber"></div>SEZ/export items (0 GST): gross falls back to value — flagged as info</div>
-      </div>
-    </div>
-    <div class="clean-section">
-      <h3>📋 File summary</h3>
-      <p>Details of the last imported file.</p>
-      <div id="cleanSummaryTable"><div style="color:var(--muted);font-size:13px">No file loaded yet.</div></div>
-    </div>
-    <div class="clean-section">
-      <h3>⚠️ Data quality flags</h3>
-      <p>Records that may need manual review.</p>
-      <div id="qualityFlags"><div style="color:var(--muted);font-size:13px">No file loaded yet.</div></div>
-    </div>
-  </div>
-
-</main>
-</div>
-
-<!-- ─── DETAIL MODAL ──────────────────────────────────────────── -->
-<div class="overlay" id="detailOverlay" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <div class="modal-header">
-      <div>
-        <div class="modal-title" id="modalVoucher">—</div>
-        <div class="modal-sub" id="modalDate">—</div>
-      </div>
-      <button class="modal-close-btn" onclick="closeModal()">×</button>
-    </div>
-    <div class="modal-body">
-      <div id="modalFlagBox"></div>
-      <div class="detail-grid" id="detailGrid"></div>
-      <div id="narrationSection"></div>
-      <div id="itemsSection"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"><span id="toastMsg">Done!</span></div>
-
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
